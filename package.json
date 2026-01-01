@@ -1,0 +1,33 @@
+{
+  "name": "js-event-loop-sim",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.2.2",
+      "zod": "^4.1.13",
+      "typescript": "^5"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "check-types": "bun run --filter '*' check-types",
+    "dev:native": "bun run --filter native dev",
+    "dev:web": "bun run --filter web dev"
+  },
+  "packageManager": "bun@1.2.22",
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@js-event-loop-sim/env": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@js-event-loop-sim/config": "workspace:*"
+  }
+}

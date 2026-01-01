@@ -1,0 +1,3 @@
+{
+  "extends": "@js-event-loop-sim/config/tsconfig.base.json"
+}
