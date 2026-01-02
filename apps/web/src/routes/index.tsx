@@ -52,7 +52,7 @@ function HomeComponent() {
                 <Panel id="callstack" defaultSize={60} minSize={20}>
                   <CallStack className="h-full" />
                 </Panel>
-                <Separator className="mx-1 w-1 rounded bg-border transition-colors hover:bg-primary/50 data-[resize-handle-state=drag]:bg-primary" />
+                <Separator className="my-1 h-1 rounded bg-border transition-colors hover:bg-primary/50 data-[resize-handle-state=drag]:bg-primary" />
                 <Panel id="console" defaultSize={40} minSize={15}>
                   <ConsolePanel />
                 </Panel>

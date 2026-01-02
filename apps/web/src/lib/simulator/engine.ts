@@ -499,7 +499,7 @@ export function getPhaseLabel(phase: Phase, runtime: Runtime): string {
 }
 
 export function getBrowserPhases(): Phase[] {
-  return ['script', 'task', 'microtasks', 'render'];
+  return ['script', 'task', 'microtasks'];
 }
 
 export function getNodePhases(): Phase[] {

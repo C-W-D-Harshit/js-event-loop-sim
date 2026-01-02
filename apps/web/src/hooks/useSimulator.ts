@@ -59,8 +59,12 @@ export function useSimulator(initialRuntime: Runtime = 'browser') {
   }, []);
 
   const play = useCallback(() => {
+    if (state.status === 'completed') {
+      stepIndexRef.current = 0;
+      dispatch({ type: 'RESET' });
+    }
     dispatch({ type: 'PLAY' });
-  }, []);
+  }, [state.status]);
 
   const pause = useCallback(() => {
     dispatch({ type: 'PAUSE' });
@@ -80,9 +84,11 @@ export function useSimulator(initialRuntime: Runtime = 'browser') {
   }, []);
 
   const setRuntime = useCallback((runtime: Runtime) => {
+    scenarioRef.current = null;
+    stepIndexRef.current = 0;
     dispatch({ type: 'SET_RUNTIME', runtime });
-    reset();
-  }, [reset]);
+    dispatch({ type: 'RESET' });
+  }, []);
 
   const setSpeed = useCallback((speed: number) => {
     dispatch({ type: 'SET_SPEED', speed });
