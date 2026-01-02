@@ -7,17 +7,50 @@ import { Controls } from "@/components/simulator/Controls";
 import { CodePanel } from "@/components/simulator/CodePanel";
 import { ConsolePanel } from "@/components/simulator/ConsolePanel";
 import { ScenarioSelector } from "@/components/simulator/ScenarioSelector";
-import { QuickEnqueue } from "@/components/simulator/QuickEnqueue";
+import { ResizableCardFrame } from "@/components/simulator/ResizableCardFrame";
+import { useLayoutState, type CardId } from "@/hooks/useLayoutState";
+import { useRef, useState, useEffect } from "react";
+import { RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
 function HomeComponent() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        setContainerSize({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        });
+      }
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  const { layouts, updateLayout, bringToFront, resetLayouts } = useLayoutState(containerSize);
+
+  const cards: { id: CardId; title: string; content: React.ReactNode }[] = [
+    { id: "callStack", title: "Call Stack", content: <CallStack className="h-full" /> },
+    { id: "console", title: "Console", content: <ConsolePanel /> },
+    { id: "queues", title: "Queues", content: <Queues /> },
+    { id: "code", title: "Code", content: <CodePanel /> },
+  ];
+
   return (
     <SimulatorProvider>
-      <div className="flex h-full flex-col overflow-hidden">
-        {/* Compact Header */}
+      <div className="flex h-full flex-col overflow-hidden bg-background">
         <header className="shrink-0 border-b bg-background/80 backdrop-blur">
           <div className="flex items-center gap-4 px-4 py-2">
             <h1 className="shrink-0 text-base font-semibold tracking-tight">
@@ -29,42 +62,54 @@ function HomeComponent() {
                 <PhaseIndicator />
               </div>
             </div>
+            <div className="hidden lg:flex">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetLayouts}
+                title="Reset layout"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
             <Controls />
           </div>
         </header>
 
-        {/* Main Content - 3 Column Layout */}
-        <main className="grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-hidden p-2 lg:grid-cols-[320px_320px_1fr]">
-          {/* Left Column: Runtime Visualization */}
-          <div className="flex min-h-0 flex-col gap-2 overflow-hidden">
-            {/* Mobile Phase Indicator */}
-            <div className="shrink-0 lg:hidden">
-              <PhaseIndicator />
-            </div>
-            {/* Runtime Grid */}
-            <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-hidden md:grid-cols-2">
-              <CallStack className="col-span-2" />
-              {/* <Queues /> */}
-            </div>
+        <main className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2 lg:hidden">
+          <div className="shrink-0">
+            <PhaseIndicator />
           </div>
+          <CallStack className="min-h-[300px]" />
+          <div className="min-h-[300px]">
+            <CodePanel />
+          </div>
+          <div className="min-h-[200px]">
+            <ConsolePanel />
+          </div>
+        </main>
 
-          {/* Middle Column (desktop): Queues */}
-          <div className="hidden min-h-0 flex-col gap-2 overflow-hidden lg:flex">
-            <Queues />
-          </div>
-
-          {/* Right Column: Code & Console */}
-          <div className="flex min-h-0 flex-col gap-2 overflow-hidden">
-            <div className="min-h-0 flex-1 overflow-hidden lg:hidden">
-              <CallStack className="lg:hidden" />
-            </div>
-            <div className="min-h-0 flex-1 overflow-hidden">
-              <CodePanel />
-            </div>
-            <div className="min-h-0 flex-1 overflow-hidden">
-              <ConsolePanel />
-            </div>
-          </div>
+        <main
+          ref={containerRef}
+          className="relative hidden min-h-0 flex-1 overflow-hidden p-2 lg:block"
+        >
+          {containerSize.width > 0 && containerSize.height > 0 && (
+            <>
+              {cards.map((card) => (
+                <ResizableCardFrame
+                  key={card.id}
+                  cardId={card.id}
+                  title={card.title}
+                  layout={layouts[card.id]}
+                  containerBounds={containerSize}
+                  onLayoutChange={updateLayout}
+                  onBringToFront={bringToFront}
+                >
+                  {card.content}
+                </ResizableCardFrame>
+              ))}
+            </>
+          )}
         </main>
       </div>
     </SimulatorProvider>
