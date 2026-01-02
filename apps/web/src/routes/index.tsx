@@ -7,47 +7,13 @@ import { Controls } from "@/components/simulator/Controls";
 import { CodePanel } from "@/components/simulator/CodePanel";
 import { ConsolePanel } from "@/components/simulator/ConsolePanel";
 import { ScenarioSelector } from "@/components/simulator/ScenarioSelector";
-import { ResizableCardFrame } from "@/components/simulator/ResizableCardFrame";
-import { useLayoutState, type CardId } from "@/hooks/useLayoutState";
-import { useRef, useState, useEffect } from "react";
-import { RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Panel, Group, Separator } from "react-resizable-panels";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
 function HomeComponent() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) {
-        setContainerSize({
-          width: entry.contentRect.width,
-          height: entry.contentRect.height,
-        });
-      }
-    });
-
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, []);
-
-  const { layouts, updateLayout, bringToFront, resetLayouts } = useLayoutState(containerSize);
-
-  const cards: { id: CardId; title: string; content: React.ReactNode }[] = [
-    { id: "callStack", title: "Call Stack", content: <CallStack className="h-full" /> },
-    { id: "console", title: "Console", content: <ConsolePanel /> },
-    { id: "queues", title: "Queues", content: <Queues /> },
-    { id: "code", title: "Code", content: <CodePanel /> },
-  ];
-
   return (
     <SimulatorProvider>
       <div className="flex h-full flex-col overflow-hidden bg-background">
@@ -61,16 +27,6 @@ function HomeComponent() {
               <div className="hidden items-center gap-2 lg:flex">
                 <PhaseIndicator />
               </div>
-            </div>
-            <div className="hidden lg:flex">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={resetLayouts}
-                title="Reset layout"
-              >
-                <RotateCcw className="h-4 w-4" />
-              </Button>
             </div>
             <Controls />
           </div>
@@ -89,27 +45,32 @@ function HomeComponent() {
           </div>
         </main>
 
-        <main
-          ref={containerRef}
-          className="relative hidden min-h-0 flex-1 overflow-hidden p-2 lg:block"
-        >
-          {containerSize.width > 0 && containerSize.height > 0 && (
-            <>
-              {cards.map((card) => (
-                <ResizableCardFrame
-                  key={card.id}
-                  cardId={card.id}
-                  title={card.title}
-                  layout={layouts[card.id]}
-                  containerBounds={containerSize}
-                  onLayoutChange={updateLayout}
-                  onBringToFront={bringToFront}
-                >
-                  {card.content}
-                </ResizableCardFrame>
-              ))}
-            </>
-          )}
+        <main className="hidden min-h-0 flex-1 p-2 lg:block">
+          <Group orientation="horizontal" className="h-full">
+            <Panel id="left-column" defaultSize={25} minSize={15}>
+              <Group orientation="vertical" className="h-full">
+                <Panel id="callstack" defaultSize={60} minSize={20}>
+                  <CallStack className="h-full" />
+                </Panel>
+                <Separator className="mx-1 w-1 rounded bg-border transition-colors hover:bg-primary/50 data-[resize-handle-state=drag]:bg-primary" />
+                <Panel id="console" defaultSize={40} minSize={15}>
+                  <ConsolePanel />
+                </Panel>
+              </Group>
+            </Panel>
+
+            <Separator className="my-1 h-auto w-1 rounded bg-border transition-colors hover:bg-primary/50 data-[resize-handle-state=drag]:bg-primary" />
+
+            <Panel id="queues" defaultSize={30} minSize={20}>
+              <Queues />
+            </Panel>
+
+            <Separator className="my-1 h-auto w-1 rounded bg-border transition-colors hover:bg-primary/50 data-[resize-handle-state=drag]:bg-primary" />
+
+            <Panel id="code" defaultSize={45} minSize={25}>
+              <CodePanel />
+            </Panel>
+          </Group>
         </main>
       </div>
     </SimulatorProvider>
