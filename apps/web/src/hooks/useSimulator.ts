@@ -130,6 +130,15 @@ export function useSimulator(initialRuntime: Runtime = 'browser') {
     };
   }, []);
 
+  useEffect(() => {
+    const defaultScenario = scenarios.find(
+      (s) => s.id === 'settimeout-vs-promise' && (s.runtime === 'browser' || s.runtime === 'both')
+    );
+    if (defaultScenario && !scenarioRef.current) {
+      loadScenario(defaultScenario);
+    }
+  }, [loadScenario]);
+
   return {
     state,
     currentScenario,

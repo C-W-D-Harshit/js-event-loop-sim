@@ -7,9 +7,25 @@ import {
 } from "@/components/ui/card";
 import { useSimulatorContext } from "./SimulatorProvider";
 import { cn } from "@/lib/utils";
+import { useMemo } from "react";
+import Prism from "prismjs";
+import "prismjs/components/prism-javascript";
+import "prismjs/themes/prism-tomorrow.css";
 
 export function CodePanel({ className }: { className?: string }) {
   const { state, currentScenario } = useSimulatorContext();
+
+  const highlightedCode = useMemo(() => {
+    if (!currentScenario) return [];
+    
+    const html = Prism.highlight(
+      currentScenario.code,
+      Prism.languages.javascript,
+      "javascript"
+    );
+    
+    return html.split("\n");
+  }, [currentScenario]);
 
   if (!currentScenario) {
     return (
@@ -25,7 +41,6 @@ export function CodePanel({ className }: { className?: string }) {
     );
   }
 
-  const lines = currentScenario.code.split("\n");
   const highlightLines = state.highlightedLines;
 
   return (
@@ -40,7 +55,7 @@ export function CodePanel({ className }: { className?: string }) {
 
       <CardContent className="min-h-0 flex-1 overflow-auto p-0 font-mono text-sm">
         <pre className="p-4">
-          {lines.map((line, i) => {
+          {highlightedCode.map((lineHtml, i) => {
             const lineNum = i + 1;
             const isHighlighted = highlightLines.includes(lineNum);
 
@@ -58,11 +73,10 @@ export function CodePanel({ className }: { className?: string }) {
                   className={
                     isHighlighted
                       ? "leading-6 text-foreground"
-                      : "leading-6 text-muted-foreground"
+                      : "leading-6"
                   }
-                >
-                  {line || " "}
-                </code>
+                  dangerouslySetInnerHTML={{ __html: lineHtml || " " }}
+                />
               </div>
             );
           })}
