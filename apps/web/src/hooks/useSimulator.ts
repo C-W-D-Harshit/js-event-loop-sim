@@ -59,9 +59,9 @@ export function useSimulator(initialRuntime: Runtime = 'browser') {
   }, []);
 
   const play = useCallback(() => {
-    if (state.status === 'completed') {
+    if (state.status === 'completed' && scenarioRef.current) {
       stepIndexRef.current = 0;
-      dispatch({ type: 'RESET' });
+      dispatch({ type: 'LOAD_SCENARIO', scenario: scenarioRef.current });
     }
     dispatch({ type: 'PLAY' });
   }, [state.status]);
