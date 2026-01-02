@@ -3,51 +3,60 @@ import { TaskCard } from './TaskCard';
 import { useSimulatorContext } from './SimulatorProvider';
 import { Zap, Clock, FastForward } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Panel, Group, Separator } from 'react-resizable-panels';
 
 export function Queues() {
   const { state } = useSimulatorContext();
   const showNextTick = state.runtime === 'node' && state.nextTickQueue.length > 0;
 
   return (
-    <div className="flex h-full flex-col gap-2">
+    <Group orientation="vertical" className="h-full">
       {showNextTick && (
-        <QueueSection
-          title="nextTick Queue"
-          icon={<FastForward className="h-4 w-4 text-pink-400" />}
-          count={state.nextTickQueue.length}
-          hint="Runs before other microtasks"
-          className="flex-1 min-h-0"
-        >
-          {state.nextTickQueue.map((task) => (
-            <TaskCard key={task.id} task={task} variant="nextTick" />
-          ))}
-        </QueueSection>
+        <>
+          <Panel id="nextTick-queue" defaultSize={33} minSize={15}>
+            <QueueSection
+              title="nextTick Queue"
+              icon={<FastForward className="h-4 w-4 text-pink-400" />}
+              count={state.nextTickQueue.length}
+              hint="Runs before other microtasks"
+            >
+              {state.nextTickQueue.map((task) => (
+                <TaskCard key={task.id} task={task} variant="nextTick" />
+              ))}
+            </QueueSection>
+          </Panel>
+          <Separator className="mx-1 h-1 rounded bg-border transition-colors hover:bg-primary/50 data-[resize-handle-state=drag]:bg-primary" />
+        </>
       )}
 
-      <QueueSection
-        title="Microtask Queue"
-        icon={<Zap className="h-4 w-4 text-violet-400" />}
-        count={state.microtaskQueue.length}
-        hint="Drains completely after each task"
-        className="flex-1 min-h-0"
-      >
-        {state.microtaskQueue.map((task) => (
-          <TaskCard key={task.id} task={task} variant="microtask" />
-        ))}
-      </QueueSection>
+      <Panel id="microtask-queue" defaultSize={showNextTick ? 33 : 50} minSize={15}>
+        <QueueSection
+          title="Microtask Queue"
+          icon={<Zap className="h-4 w-4 text-violet-400" />}
+          count={state.microtaskQueue.length}
+          hint="Drains completely after each task"
+        >
+          {state.microtaskQueue.map((task) => (
+            <TaskCard key={task.id} task={task} variant="microtask" />
+          ))}
+        </QueueSection>
+      </Panel>
 
-      <QueueSection
-        title="Macrotask Queue"
-        icon={<Clock className="h-4 w-4 text-amber-400" />}
-        count={state.macrotaskQueue.length}
-        hint="One per event loop iteration"
-        className="flex-1 min-h-0"
-      >
-        {state.macrotaskQueue.map((task) => (
-          <TaskCard key={task.id} task={task} variant="macrotask" />
-        ))}
-      </QueueSection>
-    </div>
+      <Separator className="mx-1 h-1 rounded bg-border transition-colors hover:bg-primary/50 data-[resize-handle-state=drag]:bg-primary" />
+
+      <Panel id="macrotask-queue" defaultSize={showNextTick ? 34 : 50} minSize={15}>
+        <QueueSection
+          title="Macrotask Queue"
+          icon={<Clock className="h-4 w-4 text-amber-400" />}
+          count={state.macrotaskQueue.length}
+          hint="One per event loop iteration"
+        >
+          {state.macrotaskQueue.map((task) => (
+            <TaskCard key={task.id} task={task} variant="macrotask" />
+          ))}
+        </QueueSection>
+      </Panel>
+    </Group>
   );
 }
 
@@ -57,12 +66,11 @@ interface QueueSectionProps {
   count: number;
   hint?: string;
   children: React.ReactNode;
-  className?: string;
 }
 
-function QueueSection({ title, icon, count, hint, children, className }: QueueSectionProps) {
+function QueueSection({ title, icon, count, hint, children }: QueueSectionProps) {
   return (
-    <Card size="sm" className={`flex min-h-0 flex-col overflow-hidden ${className ?? ''}`}>
+    <Card size="sm" className="flex h-full min-h-0 flex-col overflow-hidden">
       <CardHeader className="border-b">
         <CardTitle className="flex items-center gap-2 text-sm">
           {icon}
